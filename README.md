@@ -1,62 +1,62 @@
-# 🌍 Smart RTL for AI & Web (Chrome Extension)
+# 🌍 Smart RTL للذكاء الاصطناعي والويب (إضافة كروم)
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Platform](https://img.shields.io/badge/platform-Chrome%20%7C%20Edge%20%7C%20Brave-orange)
 
-A lightweight, privacy-focused browser extension designed to fix Arabic text alignment (RTL) issues on AI platforms like **Google Gemini, ChatGPT, and Claude**, without breaking code blocks or UI layouts.
+إضافة متصفح خفيفة الوزن وتركز على الخصوصية مصممة لإصلاح مشاكل محاذاة النص العربي (RTL) على منصات الذكاء الاصطناعي مثل **Google Gemini و ChatGPT و Claude**، دون كسر كتل التعليمات البرمجية أو تخطيطات واجهة المستخدم.
 
-## 🚀 The Problem
-Most AI interfaces default to Left-to-Right (LTR) alignment. When typing in Arabic (or Hebrew/Persian), this causes:
-- Punctuation marks (`.`, `?`, `:`) to appear on the wrong side.
-- Bullet points and numbered lists to break or misalign.
-- Mixed content (English words inside Arabic sentences) to look scrambled.
+## 🚀 المشكلة
+تفتقر معظم واجهات الذكاء الاصطناعي افتراضيًا إلى المحاذاة من اليمين إلى اليسار (RTL). عند الكتابة باللغة العربية (أو العبرية/الفارسية)، يتسبب ذلك في:
+- ظهور علامات الترقيم (`.`، `؟`، `:`) في الجانب الخطأ.
+- كسر أو عدم محاذاة النقاط والقوائم المرقمة.
+- ظهور المحتوى المختلط (كلمات إنجليزية داخل جمل عربية) بشكل مشوش.
 
-## 🛠️ The Solution
-**Smart RTL** automatically detects Arabic content and forces Right-to-Left direction **only** on text paragraphs, while smart filters ensure that:
-1.  **Code Blocks remain untouched** (Left-aligned) for readability.
-2.  **UI Elements** (menus, buttons) are not affected.
-3.  **Numbered Lists** are formatted correctly with proper margins.
+## 🛠️ الحل
+يقوم **Smart RTL** باكتشاف المحتوى العربي تلقائيًا ويفرض الاتجاه من اليمين إلى اليسار **فقط** على فقرات النص، بينما تضمن المرشحات الذكية ما يلي:
+1.  **بقاء كتل التعليمات البرمجية كما هي** (محاذاة لليسار) لسهولة القراءة.
+2.  **عدم تأثر عناصر واجهة المستخدم** (القوائم، الأزرار).
+3.  **تنسيق القوائم المرقمة** بشكل صحيح مع الهوامش المناسبة.
 
-## ✨ Features
-- 🧠 **Smart Detection:** Uses Regex to detect Arabic characters dynamically.
-- 🛡️ **Code Safety:** Automatically ignores `<pre>`, `<code>`, and syntax-highlighted blocks.
-- ⚡ **Real-time Observer:** Works seamlessly with streaming AI responses (text that appears gradually).
-- 🎚️ **Toggle Switch:** Includes a popup menu to Enable/Disable the extension instantly without refreshing.
-- 💾 **Persistence:** Remembers your preference (On/Off) locally.
+## ✨ المميزات
+- 🧠 **اكتشاف ذكي:** يستخدم Regex لاكتشاف الأحرف العربية ديناميكيًا.
+- 🛡️ **أمان الكود:** يتجاهل تلقائيًا `<pre>` و `<code>` والكتل التي تحتوي على تمييز بناء الجملة.
+- ⚡ **مراقب في الوقت الفعلي:** يعمل بسلاسة مع استجابات الذكاء الاصطناعي المتدفقة (النص الذي يظهر تدريجيًا).
+- 🎚️ **مفتاح التبديل:** يتضمن قائمة منبثقة لتمكين/تعطيل الإضافة فورًا دون تحديث الصفحة.
+- 💾 **الاستمرارية:** يتذكر تفضيلاتك (تشغيل/إيقاف) محليًا.
 
-## 📦 Installation (Developer Mode)
-Since this extension is open-source and currently not on the Chrome Web Store, you can install it manually:
+## 📦 التثبيت (وضع المطور)
+نظرًا لأن هذه الإضافة مفتوحة المصدر وليست موجودة حاليًا في متجر Chrome Web Store، يمكنك تثبيتها يدويًا:
 
-1.  Clone this repository or download the **ZIP** file.
-2.  Open your browser (Chrome, Edge, or Brave).
-3.  Navigate to `chrome://extensions`.
-4.  Enable **Developer Mode** (toggle in the top right corner).
-5.  Click **Load Unpacked**.
-6.  Select the folder containing these files.
-7.  Done! 🎉
+1.  استنسخ هذا المستودع أو قم بتنزيل ملف **ZIP**.
+2.  افتح متصفحك (Chrome أو Edge أو Brave).
+3.  انتقل إلى `chrome://extensions`.
+4.  قم بتمكين **وضع المطور** (Developer Mode) (التبديل في الزاوية العلوية اليمنى).
+5.  انقر فوق **تحميل غير مضغوط** (Load Unpacked).
+6.  حدد المجلد الذي يحتوي على هذه الملفات.
+7.  تم! 🎉
 
-## 🔧 Technical Details
-- **Manifest V3:** Compliant with the latest Google Chrome extension standards.
-- **MutationObserver:** Used to monitor DOM changes efficiently (zero performance lag).
-- **Local Storage:** Saves user preferences securely.
+## 🔧 التفاصيل التقنية
+- **Manifest V3:** متوافق مع أحدث معايير إضافات Google Chrome.
+- **MutationObserver:** يستخدم لمراقبة تغييرات DOM بكفاءة (بدون تأخير في الأداء).
+- **Local Storage:** يحفظ تفضيلات المستخدم بشكل آمن.
 
-## 📂 Project Structure
-├── manifest.json # Extension configuration
-├── content.js # The core logic script
-├── popup.html # The UI for the toggle switch
-├── popup.js # Logic for the popup UI
-├── icon.png # Extension icon
-└── README.md # Documentation
-## 🤝 Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+## 📂 هيكل المشروع
+├── manifest.json # تكوين الإضافة
+├── content.js # البرنامج النصي للمنطق الأساسي
+├── popup.html # واجهة المستخدم لمفتاح التبديل
+├── popup.js # منطق واجهة المستخدم المنبثقة
+├── icon.png # أيقونة الإضافة
+└── README.md # التوثيق
+## 🤝 المساهمة
+طلبات السحب (Pull requests) مرحب بها! بالنسبة للتغييرات الكبيرة، يرجى فتح مشكلة (issue) أولاً لمناقشة ما ترغب في تغييره.
 
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+1.  قم بعمل Fork للمشروع
+2.  أنشئ فرع الميزة الخاص بك (`git checkout -b feature/AmazingFeature`)
+3.  قم بتثبيت تغييراتك (`git commit -m 'Add some AmazingFeature'`)
+4.  ادفع إلى الفرع (`git push origin feature/AmazingFeature`)
+5.  افتح طلب سحب (Pull Request)
 
-## 📝 License
-Distributed under the MIT License. See `LICENSE` for more information.
+## 📝 الترخيص
+موزع تحت رخصة MIT. انظر `LICENSE` لمزيد من المعلومات.
 
 ---
-*Developed with ❤️ by Youssef El Alem*
+*تم التطوير بـ ❤️ بواسطة يوسف العالم*
