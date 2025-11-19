@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateUI(isEnabled) {
         toggleBtn.checked = isEnabled;
-        statusText.textContent = isEnabled ? "Enabled (مفعل)" : "Disabled (معطل)";
+        statusText.textContent = isEnabled ? "مفعل" : "معطل";
         statusText.style.color = isEnabled ? "#2196F3" : "#555";
     }
 });
