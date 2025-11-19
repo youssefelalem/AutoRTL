@@ -4,49 +4,126 @@
   <meta charset="UTF-8">
   <style>
     body { 
-      width: 220px; 
-      padding: 20px; 
+      width: 280px; 
+      padding: 15px; 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      text-align: center; 
-      background-color: #ffffff; 
+      text-align: right; 
+      background-color: #f9f9f9; 
       color: #333;
+      direction: rtl;
     }
     h3 { 
-      margin: 0 0 20px 0; 
+      margin: 0 0 15px 0; 
       color: #2c3e50; 
-      font-size: 18px;
+      font-size: 16px;
+      text-align: center;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 10px;
     }
     
+    .control-group {
+      margin-bottom: 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .control-label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    select, input[type="range"] {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    
+    /* جعل أشرطة التمرير دائماً من اليسار لليمين لسهولة الاستخدام */
+    input[type="range"] {
+      direction: ltr;
+    }
+
     /* تصميم زر التبديل (Toggle Switch) */
-    .switch { position: relative; display: inline-block; width: 60px; height: 34px; margin-bottom: 10px; }
+    .switch-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
     
     input:checked + .slider { background-color: #2196F3; }
-    input:checked + .slider:before { transform: translateX(26px); }
+    input:checked + .slider:before { transform: translateX(22px); }
     
-    .status { margin-top: 5px; font-size: 14px; font-weight: bold; color: #7f8c8d; }
+    .status { font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 0; }
     
+    .btn-exclude {
+      width: 100%;
+      padding: 8px;
+      background-color: #ff5252;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.3s;
+    }
+    .btn-exclude:hover { background-color: #d32f2f; }
+    .btn-exclude.excluded { background-color: #4CAF50; }
+
     .footer {
-      margin-top: 20px;
+      margin-top: 15px;
       padding-top: 10px;
       border-top: 1px solid #eee;
-      font-size: 11px;
+      font-size: 10px;
       color: #95a5a6;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h3>محاذاة العربية التلقائية</h3>
-  <label class="switch">
-    <input type="checkbox" id="toggleBtn">
-    <span class="slider"></span>
-  </label>
-  <p class="status" id="statusText">جاري التحميل...</p>
+  <h3>إعدادات Auto RTL</h3>
+  
+  <div class="control-group switch-container">
+    <span class="status" id="statusText">جاري التحميل...</span>
+    <label class="switch">
+      <input type="checkbox" id="toggleBtn">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">نوع الخط العربي</label>
+    <select id="fontSelect">
+      <option value="default">الافتراضي (Default)</option>
+      <option value="'Cairo', sans-serif">Cairo</option>
+      <option value="'Tajawal', sans-serif">Tajawal</option>
+      <option value="'Noto Sans Arabic', sans-serif">Noto Sans Arabic</option>
+      <option value="'IBM Plex Sans Arabic', sans-serif">IBM Plex Sans</option>
+      <option value="'Amiri', serif">Amiri (نسخ)</option>
+    </select>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label">حجم الخط الإضافي: <span id="fontSizeVal">0</span>px</label>
+    <input type="range" id="fontSizeRange" min="-5" max="10" value="0" step="1">
+    
+    <label class="control-label">ارتفاع السطر: <span id="lineHeightVal">1.5</span></label>
+    <input type="range" id="lineHeightRange" min="1.0" max="2.5" value="1.5" step="0.1">
+  </div>
+
+  <button id="excludeBtn" class="btn-exclude">تعطيل في هذا الموقع</button>
   
   <div class="footer">
-    Auto RTL v2.1
+    Auto RTL v3.0 • <span id="shortcutHint">Alt+Shift+R</span>
   </div>
   <script src="popup.js"></script>
 </body>

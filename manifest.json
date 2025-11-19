@@ -1,9 +1,21 @@
 {
   "manifest_version": 3,
   "name": "Auto RTL for Arabic",
-  "version": "2.1",
-  "description": "Smart RTL for Arabic content with Toggle Switch",
-  "permissions": ["storage", "activeTab"],
+  "version": "3.0",
+  "description": "Professional Arabic RTL tool with Fonts, Styling & Customization",
+  "permissions": ["storage", "activeTab", "contextMenus", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "toggle-rtl": {
+      "suggested_key": {
+        "default": "Alt+Shift+R",
+        "mac": "Alt+Shift+R"
+      },
+      "description": "Toggle Auto RTL ON/OFF"
+    }
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
