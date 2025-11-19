@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Auto RTL for Arabic",
-  "version": "2.0",
+  "version": "2.1",
   "description": "Smart RTL for Arabic content with Toggle Switch",
   "permissions": ["storage", "activeTab"],
   "action": {

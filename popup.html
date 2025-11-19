@@ -1,13 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html dir="rtl">
 <head>
   <meta charset="UTF-8">
   <style>
-    body { width: 200px; padding: 15px; font-family: sans-serif; text-align: center; background-color: #f4f4f4; }
-    h3 { margin: 0 0 15px 0; color: #333; }
+    body { 
+      width: 220px; 
+      padding: 20px; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      text-align: center; 
+      background-color: #ffffff; 
+      color: #333;
+    }
+    h3 { 
+      margin: 0 0 20px 0; 
+      color: #2c3e50; 
+      font-size: 18px;
+    }
     
     /* تصميم زر التبديل (Toggle Switch) */
-    .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+    .switch { position: relative; display: inline-block; width: 60px; height: 34px; margin-bottom: 10px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
     .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
@@ -15,16 +26,28 @@
     input:checked + .slider { background-color: #2196F3; }
     input:checked + .slider:before { transform: translateX(26px); }
     
-    .status { margin-top: 10px; font-size: 14px; font-weight: bold; color: #555; }
+    .status { margin-top: 5px; font-size: 14px; font-weight: bold; color: #7f8c8d; }
+    
+    .footer {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+      font-size: 11px;
+      color: #95a5a6;
+    }
   </style>
 </head>
 <body>
-  <h3>محاذاة العربية</h3>
+  <h3>محاذاة العربية التلقائية</h3>
   <label class="switch">
     <input type="checkbox" id="toggleBtn">
     <span class="slider"></span>
   </label>
-  <p class="status" id="statusText">معطل</p>
+  <p class="status" id="statusText">جاري التحميل...</p>
+  
+  <div class="footer">
+    Auto RTL v2.1
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>
