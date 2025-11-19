@@ -1,5 +1,5 @@
 // إدارة القائمة المختصرة (Context Menu)
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.create({
     id: "force-rtl",
     title: "فرض اتجاه RTL (يمين لليسار)",
@@ -11,6 +11,31 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "فرض اتجاه LTR (يسار ليمين)",
     contexts: ["selection", "editable", "page"]
   });
+
+  // حقن السكريبت تلقائياً في جميع التبويبات المفتوحة عند التثبيت أو التحديث
+  // هذا يضمن عمل الإضافة فوراً دون الحاجة لتحديث الصفحة
+  const manifest = chrome.runtime.getManifest();
+  const contentScripts = manifest.content_scripts;
+
+  if (contentScripts) {
+    for (const cs of contentScripts) {
+      const tabs = await chrome.tabs.query({url: cs.matches});
+      for (const tab of tabs) {
+        // نتجاهل التبويبات التي لا يمكننا الوصول إليها (مثل chrome://)
+        if (tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) continue;
+        
+        try {
+          await chrome.scripting.executeScript({
+            target: {tabId: tab.id},
+            files: cs.js,
+          });
+        } catch (err) {
+          // تجاهل الأخطاء (قد يكون التبويب مغلقاً أو غير متاح)
+          console.log(`Failed to inject script into tab ${tab.id}:`, err);
+        }
+      }
+    }
+  }
 });
 
 // معالجة النقر على القائمة المختصرة

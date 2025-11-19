@@ -1,3 +1,11 @@
+if (window.hasRunAutoRTL) {
+   // إذا كان السكريبت يعمل، نطلب منه تحديث نفسه عبر رسالة وهمية (اختياري)
+   // أو نكتفي بالخروج لأن النسخة القديمة لا تزال تعمل وتستقبل الرسائل
+   throw new Error("AutoRTL already loaded"); 
+}
+window.hasRunAutoRTL = true;
+
+(function() {
 let isExtensionEnabled = true;
 let currentSettings = {
     fontFamily: 'default',
@@ -12,8 +20,10 @@ let observer = null;
 let debounceTimer = null;
 
 // قائمة العناصر المستهدفة
-const TARGET_TAGS = ['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'BLOCKQUOTE', 'TEXTAREA', 'INPUT', 'DIV', 'SPAN'];
-const TARGET_SELECTORS = 'p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, textarea, input[type="text"], input[type="search"], .model-response-text, div, span';
+// إزالة DIV و SPAN من القائمة العامة لتجنب التأثير على حاويات التخطيط (Layout Containers)
+// التي قد تسبب تداخل مع القوائم الجانبية
+const TARGET_TAGS = ['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'BLOCKQUOTE', 'TEXTAREA', 'INPUT'];
+const TARGET_SELECTORS = 'p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, textarea, input[type="text"], input[type="search"], .model-response-text';
 
 // حقن خطوط Google Fonts
 const fontsLink = document.createElement('link');
@@ -68,20 +78,10 @@ function processElement(element, forceRTL = false) {
     // تجاهل الأكواد
     if (element.closest('pre') || element.closest('code') || element.classList.contains('code-line')) return;
 
-    // تحسين الأداء: للعناصر العامة مثل div و span، نتحقق أولاً مما إذا كانت تحتوي على نص مباشر
-    // لتجنب معالجة حاويات التخطيط الفارغة
-    if ((element.tagName === 'DIV' || element.tagName === 'SPAN') && element.childElementCount > 0) {
-        // إذا كان العنصر يحتوي على عناصر فرعية، نتأكد أن لديه نص مباشر طويل بما يكفي
-        // وإلا نتجاهله ونترك المعالجة للعناصر الفرعية
-        let hasDirectText = false;
-        for (let node of element.childNodes) {
-            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 3) {
-                hasDirectText = true;
-                break;
-            }
-        }
-        if (!hasDirectText) return;
-    }
+    // تجاهل العناصر التي قد تكون حاويات تخطيط حساسة
+    // إذا كان العنصر يحتوي على position: absolute أو fixed، غالباً لا يجب تغيير اتجاهه
+    const style = window.getComputedStyle(element);
+    if (style.position === 'absolute' || style.position === 'fixed') return;
 
     const text = element.value || element.textContent;
     const isArabic = isArabicContent(text);
@@ -92,8 +92,21 @@ function processElement(element, forceRTL = false) {
             element.style.textAlign = 'right';
             element.setAttribute('data-rtl-modified', 'true');
 
+            // إصلاح التداخل مع القوائم الجانبية:
+            // في بعض المواقع، تحويل الاتجاه لليمين قد يدفعه تحت القوائم الثابتة يميناً
+            // لذا نضيف هامشاً يميناً صغيراً أو نتأكد من عدم تجاوز العرض
+            // لكن الحل الأفضل هو عدم تغيير اتجاه الحاويات الكبيرة جداً (مثل body أو main wrappers)
+            // بل فقط النصوص الداخلية. الكود الحالي يستهدف p, h1, div, etc.
+            
+            // تحسين للقوائم النقطية
             if(element.tagName === 'LI') {
                 element.style.listStylePosition = 'outside';
+                element.style.marginRight = '25px'; // مساحة للنقاط خارج النص
+            } else {
+                // إضافة هامش داخلي صغير للعناصر الأخرى لمنع الالتصاق بالحافة اليمنى (الشريط الجانبي/شريط التمرير)
+                element.style.paddingRight = '10px';
+                // التأكد من أن البادينغ لا يزيد العرض الكلي ويكسر التصميم
+                element.style.boxSizing = 'border-box';
             }
         }
         // تطبيق التنسيقات دائماً للعربية
@@ -156,6 +169,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     }
     
+    if (request.action === "toggle-exclusion") {
+        isDomainExcluded = request.isExcluded;
+        
+        if (isDomainExcluded) {
+            // تم استثناء الموقع -> إيقاف كل شيء وإزالة التأثيرات
+            if (observer) observer.disconnect();
+            removeRTL();
+        } else {
+            // تم إلغاء الاستثناء -> تشغيل
+            if (isExtensionEnabled) {
+                applyRTL();
+                startObserver();
+            }
+        }
+    }
+    
     if (request.action === "update-settings") {
         // تحديث الإعدادات محلياً
         if (request.settings.isEnabled !== undefined) isExtensionEnabled = request.settings.isEnabled;
@@ -163,9 +192,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.settings.fontSizeAdd !== undefined) currentSettings.fontSizeAdd = request.settings.fontSizeAdd;
         if (request.settings.lineHeight !== undefined) currentSettings.lineHeight = request.settings.lineHeight;
 
-        // إعادة التطبيق بالتنسيقات الجديدة
+        // إعادة التطبيق أو الإزالة بناءً على الحالة الجديدة
         if (isExtensionEnabled && !isDomainExcluded) {
             applyRTL();
+            startObserver(); // التأكد من تشغيل المراقب عند إعادة التفعيل
+        } else {
+            // إذا تم التعطيل، نقوم بإزالة التأثيرات فوراً
+            if (observer) observer.disconnect();
+            removeRTL();
         }
     }
 
@@ -202,3 +236,4 @@ function startObserver() {
         subtree: true
     });
 }
+})();
