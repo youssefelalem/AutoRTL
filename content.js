@@ -20,10 +20,8 @@ let observer = null;
 let debounceTimer = null;
 
 // قائمة العناصر المستهدفة
-// إزالة DIV و SPAN من القائمة العامة لتجنب التأثير على حاويات التخطيط (Layout Containers)
-// التي قد تسبب تداخل مع القوائم الجانبية
-const TARGET_TAGS = ['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'BLOCKQUOTE', 'TEXTAREA', 'INPUT'];
-const TARGET_SELECTORS = 'p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, textarea, input[type="text"], input[type="search"], .model-response-text';
+const TARGET_TAGS = ['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'BLOCKQUOTE', 'TEXTAREA', 'INPUT', 'DIV', 'SPAN'];
+const TARGET_SELECTORS = 'p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, textarea, input[type="text"], input[type="search"], .model-response-text, div, span';
 
 // حقن خطوط Google Fonts
 const fontsLink = document.createElement('link');
@@ -49,9 +47,10 @@ function isArabicContent(text) {
 // تطبيق التنسيقات على عنصر
 function applyStyles(element) {
     if (currentSettings.fontFamily !== 'default') {
-        element.style.fontFamily = currentSettings.fontFamily;
+        // استخدام !important لضمان تطبيق الخط فوق خطوط الموقع
+        element.style.setProperty('font-family', currentSettings.fontFamily, 'important');
     } else {
-        element.style.fontFamily = '';
+        element.style.removeProperty('font-family');
     }
 
     // إعادة تعيين حجم الخط أولاً للحصول على الحجم الأصلي من CSS
@@ -83,6 +82,19 @@ function processElement(element, forceRTL = false) {
     const style = window.getComputedStyle(element);
     if (style.position === 'absolute' || style.position === 'fixed') return;
 
+    // تحسين الأداء: للعناصر العامة مثل div و span، نتحقق أولاً مما إذا كانت تحتوي على نص مباشر
+    // لتجنب معالجة حاويات التخطيط الفارغة التي قد تسبب مشاكل في التصميم
+    if ((element.tagName === 'DIV' || element.tagName === 'SPAN') && element.childElementCount > 0) {
+        let hasDirectText = false;
+        for (let node of element.childNodes) {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 3) {
+                hasDirectText = true;
+                break;
+            }
+        }
+        if (!hasDirectText) return;
+    }
+
     const text = element.value || element.textContent;
     const isArabic = isArabicContent(text);
     
@@ -100,13 +112,7 @@ function processElement(element, forceRTL = false) {
             
             // تحسين للقوائم النقطية
             if(element.tagName === 'LI') {
-                element.style.listStylePosition = 'outside';
-                element.style.marginRight = '25px'; // مساحة للنقاط خارج النص
-            } else {
-                // إضافة هامش داخلي صغير للعناصر الأخرى لمنع الالتصاق بالحافة اليمنى (الشريط الجانبي/شريط التمرير)
-                element.style.paddingRight = '10px';
-                // التأكد من أن البادينغ لا يزيد العرض الكلي ويكسر التصميم
-                element.style.boxSizing = 'border-box';
+                element.style.listStylePosition = 'inside'; // تغيير من outside لـ inside لمنع اختفاء النقاط
             }
         }
         // تطبيق التنسيقات دائماً للعربية
