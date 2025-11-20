@@ -91,7 +91,7 @@ function updateGlobalStyle() {
         ul[data-rtl-modified="true"], ol[data-rtl-modified="true"] {
             direction: rtl !important;
             text-align: right !important;
-            padding-right: 2.5rem !important; /* مساحة كافية للنقاط */
+            padding-right: 1.5rem !important; /* تقليل المسافة لإصلاح الفراغ الكبير */
             padding-left: 0 !important;
             list-style-position: outside !important; /* المظهر الاحترافي */
         }
