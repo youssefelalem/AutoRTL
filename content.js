@@ -20,8 +20,8 @@ let observer = null;
 let debounceTimer = null;
 
 // قائمة العناصر المستهدفة
-const TARGET_TAGS = ['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'BLOCKQUOTE', 'TEXTAREA', 'INPUT', 'DIV', 'SPAN'];
-const TARGET_SELECTORS = 'p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, textarea, input[type="text"], input[type="search"], .model-response-text, div, span';
+const TARGET_TAGS = ['P', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'BLOCKQUOTE', 'TEXTAREA', 'INPUT', 'DIV', 'SPAN', 'UL', 'OL'];
+const TARGET_SELECTORS = 'p, li, h1, h2, h3, h4, h5, h6, td, th, blockquote, textarea, input[type="text"], input[type="search"], .model-response-text, div, span, ul, ol';
 
 // حقن خطوط Google Fonts
 const fontsLink = document.createElement('link');
@@ -44,31 +44,82 @@ function isArabicContent(text) {
     return arabicPattern.test(text);
 }
 
-// تطبيق التنسيقات على عنصر
-function applyStyles(element) {
-    if (currentSettings.fontFamily !== 'default') {
-        // استخدام !important لضمان تطبيق الخط فوق خطوط الموقع
-        element.style.setProperty('font-family', currentSettings.fontFamily, 'important');
-    } else {
-        element.style.removeProperty('font-family');
+// إنشاء عنصر style للتحكم الشامل في الخطوط
+const styleElement = document.createElement('style');
+styleElement.id = 'auto-rtl-global-style';
+document.head.appendChild(styleElement);
+
+// تحديث الستايل العام
+function updateGlobalStyle() {
+    if (!document.head.contains(styleElement)) {
+        document.head.appendChild(styleElement);
     }
 
-    // إعادة تعيين حجم الخط أولاً للحصول على الحجم الأصلي من CSS
-    // هذا يمنع التراكم المستمر للحجم عند تحديث الإعدادات
+    let css = '';
+    
+    // 1. الخط
+    if (currentSettings.fontFamily !== 'default') {
+        css += `
+            [data-rtl-modified="true"] {
+                font-family: ${currentSettings.fontFamily} !important;
+            }
+        `;
+    }
+
+    // 2. ارتفاع السطر
+    if (currentSettings.lineHeight > 1.0) {
+        css += `
+            [data-rtl-modified="true"] {
+                line-height: ${currentSettings.lineHeight} !important;
+            }
+        `;
+    } else {
+        // إذا كان 1.0 أو أقل (الافتراضي)، لا نفرض شيئاً أو نعيد تعيينه
+        // لكن إذا أردنا السماح للمستخدم بتقليل الارتفاع، يمكننا إزالة الشرط > 1.0
+        // حالياً في الـ popup المدى من 1.0 إلى 2.5
+    }
+
+    // 3. إصلاح القوائم والأرقام
+    css += `
+        /* تنسيق عناصر القائمة */
+        li[data-rtl-modified="true"], .rtl-list-item {
+            direction: rtl !important;
+            text-align: right !important;
+        }
+
+        /* تنسيق الحاويات (ul, ol) لضمان ظهور النقاط والأرقام بشكل صحيح */
+        ul[data-rtl-modified="true"], ol[data-rtl-modified="true"] {
+            direction: rtl !important;
+            text-align: right !important;
+            padding-right: 2.5rem !important; /* مساحة كافية للنقاط */
+            padding-left: 0 !important;
+            list-style-position: outside !important; /* المظهر الاحترافي */
+        }
+        
+        /* إصلاح خاص للأرقام في القوائم المرتبة */
+        ol[data-rtl-modified="true"] {
+            list-style-type: decimal !important;
+        }
+    `;
+
+    styleElement.textContent = css;
+}
+
+// تطبيق التنسيقات على عنصر (فقط الحجم لأنه نسبي)
+function applyStyles(element) {
+    // الخط وارتفاع السطر يتم التعامل معهما عبر updateGlobalStyle الآن
+    
+    // إعادة تعيين حجم الخط أولاً
     element.style.fontSize = '';
 
     if (currentSettings.fontSizeAdd !== 0) {
         const computedStyle = window.getComputedStyle(element);
         const currentSize = parseFloat(computedStyle.fontSize);
         if (!isNaN(currentSize)) {
-            // نتأكد أن الحجم الجديد لا يقل عن حد معين (مثلاً 8px)
             const newSize = Math.max(8, currentSize + currentSettings.fontSizeAdd);
-            element.style.fontSize = `${newSize}px`;
+            // استخدام !important لضمان تطبيق الحجم
+            element.style.setProperty('font-size', `${newSize}px`, 'important');
         }
-    }
-
-    if (currentSettings.lineHeight > 1.0) {
-        element.style.lineHeight = currentSettings.lineHeight;
     }
 }
 
@@ -104,18 +155,26 @@ function processElement(element, forceRTL = false) {
             element.style.textAlign = 'right';
             element.setAttribute('data-rtl-modified', 'true');
 
-            // إصلاح التداخل مع القوائم الجانبية:
-            // في بعض المواقع، تحويل الاتجاه لليمين قد يدفعه تحت القوائم الثابتة يميناً
-            // لذا نضيف هامشاً يميناً صغيراً أو نتأكد من عدم تجاوز العرض
-            // لكن الحل الأفضل هو عدم تغيير اتجاه الحاويات الكبيرة جداً (مثل body أو main wrappers)
-            // بل فقط النصوص الداخلية. الكود الحالي يستهدف p, h1, div, etc.
-            
             // تحسين للقوائم النقطية
             if(element.tagName === 'LI') {
-                element.style.listStylePosition = 'inside'; // تغيير من outside لـ inside لمنع اختفاء النقاط
+                element.classList.add('rtl-list-item');
+                
+                // التأكد من أن الحاوية (ul/ol) لديها الاتجاه والهوامش الصحيحة
+                // هذا يضمن ظهور النقاط والأرقام بشكل سليم (Outside)
+                const parent = element.parentElement;
+                if (parent && (parent.tagName === 'UL' || parent.tagName === 'OL')) {
+                    if (parent.getAttribute('data-rtl-modified') !== 'true') {
+                        parent.setAttribute('data-rtl-modified', 'true');
+                    }
+                }
+            } else {
+                // إضافة هامش داخلي صغير للعناصر الأخرى لمنع الالتصاق بالحافة اليمنى (الشريط الجانبي/شريط التمرير)
+                element.style.paddingRight = '10px';
+                // التأكد من أن البادينغ لا يزيد العرض الكلي ويكسر التصميم
+                element.style.boxSizing = 'border-box';
             }
         }
-        // تطبيق التنسيقات دائماً للعربية
+        // تطبيق التنسيقات (الحجم فقط هنا)
         applyStyles(element);
     }
 }
@@ -150,6 +209,9 @@ chrome.storage.sync.get(['isEnabled', 'fontFamily', 'fontSizeAdd', 'lineHeight',
     if (result.fontFamily) currentSettings.fontFamily = result.fontFamily;
     if (result.fontSizeAdd) currentSettings.fontSizeAdd = result.fontSizeAdd;
     if (result.lineHeight) currentSettings.lineHeight = result.lineHeight;
+
+    // تحديث الستايل العام فوراً
+    updateGlobalStyle();
 
     // التحقق من الاستثناء
     const hostname = window.location.hostname;
@@ -197,6 +259,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.settings.fontFamily !== undefined) currentSettings.fontFamily = request.settings.fontFamily;
         if (request.settings.fontSizeAdd !== undefined) currentSettings.fontSizeAdd = request.settings.fontSizeAdd;
         if (request.settings.lineHeight !== undefined) currentSettings.lineHeight = request.settings.lineHeight;
+
+        // تحديث الستايل العام عند تغيير الإعدادات
+        updateGlobalStyle();
 
         // إعادة التطبيق أو الإزالة بناءً على الحالة الجديدة
         if (isExtensionEnabled && !isDomainExcluded) {
